@@ -81,6 +81,14 @@ export type OverviewStore = StoreSummary & {
     leader: { name: string; points: number } | null;
 };
 
+export type AdminUser = {
+    id: number;
+    name: string;
+    email: string;
+    is_super_admin: boolean;
+    store: { id: number; number: string; name: string | null } | null;
+};
+
 export type AdminSharedProps = {
     auth: {
         user: { id: number; name: string; email: string } | null;

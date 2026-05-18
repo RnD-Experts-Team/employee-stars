@@ -7,6 +7,7 @@ import {
     Pizza,
     Settings as SettingsIcon,
     Sparkles,
+    UserCog,
     Users,
 } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
@@ -39,6 +40,7 @@ const storeManagerNav: NavItem[] = [
 const superAdminNav: NavItem[] = [
     { title: 'All stores overview', href: admin.overview(), icon: LayoutDashboard },
     { title: 'Manage stores', href: admin.stores.index(), icon: Building2 },
+    { title: 'Manage users', href: admin.users.index(), icon: UserCog },
 ];
 
 export function AppSidebar() {

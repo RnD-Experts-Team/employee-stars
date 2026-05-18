@@ -8,6 +8,7 @@ use App\Http\Controllers\Admin\ScoreboardController;
 use App\Http\Controllers\Admin\SettingsController;
 use App\Http\Controllers\Admin\StoreController;
 use App\Http\Controllers\Admin\StoreSwitchController;
+use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\EmployeeDetailController;
 use App\Http\Controllers\LandingController;
 use App\Http\Controllers\LeaderboardController;
@@ -55,6 +56,10 @@ Route::middleware(['auth', 'verified', 'super.admin'])
 
         Route::post('stores/{store}/switch', StoreSwitchController::class)
             ->name('admin.stores.switch');
+
+        Route::resource('users', UserController::class)
+            ->except(['create', 'show', 'edit'])
+            ->names('admin.users');
     });
 
 require __DIR__.'/settings.php';
