@@ -60,36 +60,38 @@ export function StoreSwitcher({ stores, currentStore }: Props) {
 
                 <DropdownMenuContent
                     align="start"
-                    className="w-[var(--radix-dropdown-menu-trigger-width)] min-w-[220px]"
+                    className="w-[var(--radix-dropdown-menu-trigger-width)] min-w-[220px] p-0"
                 >
                     <DropdownMenuLabel className="text-[10px] font-semibold tracking-widest text-muted-foreground uppercase">
                         Switch context
                     </DropdownMenuLabel>
-                    <DropdownMenuSeparator />
-                    {stores.map((store) => (
-                        <DropdownMenuItem
-                            key={store.id}
-                            onSelect={(event) => {
-                                event.preventDefault();
-                                switchTo(store);
-                            }}
-                            className="cursor-pointer"
-                        >
-                            <div className="flex flex-1 items-center justify-between">
-                                <div className="min-w-0">
-                                    <div className="font-medium">{store.number}</div>
-                                    {store.name && (
-                                        <div className="text-xs text-muted-foreground">
-                                            {store.name}
-                                        </div>
+                    <DropdownMenuSeparator className="my-0" />
+                    <div className="max-h-[320px] overflow-y-auto p-1">
+                        {stores.map((store) => (
+                            <DropdownMenuItem
+                                key={store.id}
+                                onSelect={(event) => {
+                                    event.preventDefault();
+                                    switchTo(store);
+                                }}
+                                className="cursor-pointer"
+                            >
+                                <div className="flex flex-1 items-center justify-between">
+                                    <div className="min-w-0">
+                                        <div className="font-medium">{store.number}</div>
+                                        {store.name && (
+                                            <div className="text-xs text-muted-foreground">
+                                                {store.name}
+                                            </div>
+                                        )}
+                                    </div>
+                                    {currentStore?.id === store.id && (
+                                        <Check className="ml-2 size-4 text-emerald-600" />
                                     )}
                                 </div>
-                                {currentStore?.id === store.id && (
-                                    <Check className="ml-2 size-4 text-emerald-600" />
-                                )}
-                            </div>
-                        </DropdownMenuItem>
-                    ))}
+                            </DropdownMenuItem>
+                        ))}
+                    </div>
                 </DropdownMenuContent>
             </DropdownMenu>
         </div>

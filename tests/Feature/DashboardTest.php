@@ -25,10 +25,8 @@ class DashboardTest extends TestCase
 
     public function test_manager_without_a_store_is_forbidden(): void
     {
-        $user = User::factory()->create([
-            'store_id' => null,
-            'is_super_admin' => false,
-        ]);
+        $user = User::factory()->create(['is_super_admin' => false]);
+        // No stores attached via pivot.
 
         $this->actingAs($user)->get(route('dashboard'))->assertForbidden();
     }

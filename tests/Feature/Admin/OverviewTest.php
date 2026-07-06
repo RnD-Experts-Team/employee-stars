@@ -13,13 +13,15 @@ class OverviewTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_managers_cannot_view_network_overview(): void
+    public function test_managers_can_view_network_overview_as_read_only(): void
     {
+        // Coverage of the read-only per-row `can_manage` flag lives in
+        // NetworkOverviewAccessTest. Here we only assert basic accessibility.
         $user = $this->managerForStore();
 
         $this->actingAs($user)
             ->get(route('admin.overview'))
-            ->assertForbidden();
+            ->assertOk();
     }
 
     public function test_super_admin_sees_cross_store_summary(): void

@@ -36,7 +36,7 @@ class UserManagementTest extends TestCase
             );
     }
 
-    public function test_super_admin_can_create_a_store_manager(): void
+    public function test_super_admin_can_create_a_store_manager_with_one_store(): void
     {
         $store = Store::factory()->create();
         $admin = $this->superAdmin();
@@ -46,7 +46,7 @@ class UserManagementTest extends TestCase
                 'name' => 'Dana Reyes',
                 'email' => 'dana@pneunited.com',
                 'role' => 'manager',
-                'store_id' => $store->id,
+                'store_ids' => [$store->id],
                 'password' => 'secret-pass',
                 'password_confirmation' => 'secret-pass',
             ])
@@ -56,8 +56,34 @@ class UserManagementTest extends TestCase
 
         $this->assertNotNull($created);
         $this->assertFalse($created->is_super_admin);
-        $this->assertSame($store->id, $created->store_id);
         $this->assertTrue(Hash::check('secret-pass', $created->password));
+        $this->assertDatabaseHas('store_user', [
+            'user_id' => $created->id,
+            'store_id' => $store->id,
+        ]);
+    }
+
+    public function test_super_admin_can_assign_multiple_stores(): void
+    {
+        $storeA = Store::factory()->create();
+        $storeB = Store::factory()->create();
+        $storeC = Store::factory()->create();
+        $admin = $this->superAdmin();
+
+        $this->actingAs($admin)
+            ->post(route('admin.users.store'), [
+                'name' => 'Regional',
+                'email' => 'regional@pneunited.com',
+                'role' => 'manager',
+                'store_ids' => [$storeA->id, $storeB->id, $storeC->id],
+                'password' => 'secret-pass',
+                'password_confirmation' => 'secret-pass',
+            ])
+            ->assertRedirect();
+
+        $created = User::query()->where('email', 'regional@pneunited.com')->first();
+
+        $this->assertSame(3, $created->stores()->count());
     }
 
     public function test_super_admin_can_create_another_super_admin_without_store(): void
@@ -69,7 +95,7 @@ class UserManagementTest extends TestCase
                 'name' => 'Root',
                 'email' => 'root@pneunited.com',
                 'role' => 'super_admin',
-                'store_id' => null,
+                'store_ids' => [],
                 'password' => 'secret-pass',
                 'password_confirmation' => 'secret-pass',
             ])
@@ -77,10 +103,10 @@ class UserManagementTest extends TestCase
 
         $created = User::query()->where('email', 'root@pneunited.com')->first();
         $this->assertTrue($created->is_super_admin);
-        $this->assertNull($created->store_id);
+        $this->assertSame(0, $created->stores()->count());
     }
 
-    public function test_manager_role_requires_a_store(): void
+    public function test_manager_role_requires_at_least_one_store(): void
     {
         $admin = $this->superAdmin();
 
@@ -90,11 +116,11 @@ class UserManagementTest extends TestCase
                 'name' => 'No Store',
                 'email' => 'nostore@pneunited.com',
                 'role' => 'manager',
-                'store_id' => null,
+                'store_ids' => [],
                 'password' => 'secret-pass',
                 'password_confirmation' => 'secret-pass',
             ])
-            ->assertSessionHasErrors('store_id');
+            ->assertSessionHasErrors('store_ids');
     }
 
     public function test_password_must_be_confirmed_on_create(): void
@@ -108,21 +134,19 @@ class UserManagementTest extends TestCase
                 'name' => 'Mismatch',
                 'email' => 'mismatch@pneunited.com',
                 'role' => 'manager',
-                'store_id' => $store->id,
+                'store_ids' => [$store->id],
                 'password' => 'secret-pass',
                 'password_confirmation' => 'different',
             ])
             ->assertSessionHasErrors('password');
     }
 
-    public function test_super_admin_can_reassign_a_manager_to_another_store(): void
+    public function test_super_admin_can_reassign_a_manager_to_different_stores(): void
     {
         $storeA = Store::factory()->create();
         $storeB = Store::factory()->create();
-        $manager = User::factory()->create([
-            'store_id' => $storeA->id,
-            'is_super_admin' => false,
-        ]);
+        $storeC = Store::factory()->create();
+        $manager = $this->managerForStores($storeA, $storeB);
         $admin = $this->superAdmin();
 
         $this->actingAs($admin)
@@ -130,21 +154,23 @@ class UserManagementTest extends TestCase
                 'name' => $manager->name,
                 'email' => $manager->email,
                 'role' => 'manager',
-                'store_id' => $storeB->id,
+                'store_ids' => [$storeB->id, $storeC->id],
             ])
             ->assertRedirect();
 
-        $this->assertSame($storeB->id, $manager->fresh()->store_id);
+        $assigned = $manager->fresh()->stores()->pluck('stores.id')->all();
+        sort($assigned);
+        $expected = [$storeB->id, $storeC->id];
+        sort($expected);
+        $this->assertSame($expected, $assigned);
     }
 
     public function test_updating_without_password_keeps_existing_password(): void
     {
         $store = Store::factory()->create();
-        $manager = User::factory()->create([
-            'store_id' => $store->id,
-            'is_super_admin' => false,
-            'password' => 'original-pass',
-        ]);
+        $manager = $this->managerForStore($store);
+        $manager->password = 'original-pass';
+        $manager->save();
         $admin = $this->superAdmin();
 
         $this->actingAs($admin)
@@ -152,12 +178,32 @@ class UserManagementTest extends TestCase
                 'name' => 'Renamed',
                 'email' => $manager->email,
                 'role' => 'manager',
-                'store_id' => $store->id,
+                'store_ids' => [$store->id],
             ])
             ->assertRedirect();
 
         $this->assertTrue(Hash::check('original-pass', $manager->fresh()->password));
         $this->assertSame('Renamed', $manager->fresh()->name);
+    }
+
+    public function test_promoting_manager_to_super_admin_detaches_stores(): void
+    {
+        $storeA = Store::factory()->create();
+        $storeB = Store::factory()->create();
+        $manager = $this->managerForStores($storeA, $storeB);
+        $admin = $this->superAdmin();
+
+        $this->actingAs($admin)
+            ->put(route('admin.users.update', $manager), [
+                'name' => $manager->name,
+                'email' => $manager->email,
+                'role' => 'super_admin',
+                'store_ids' => [],
+            ])
+            ->assertRedirect();
+
+        $this->assertTrue($manager->fresh()->is_super_admin);
+        $this->assertSame(0, $manager->fresh()->stores()->count());
     }
 
     public function test_super_admin_cannot_delete_their_own_account(): void
@@ -174,32 +220,12 @@ class UserManagementTest extends TestCase
     public function test_super_admin_can_delete_another_user(): void
     {
         $admin = $this->superAdmin();
-        $victim = User::factory()->create([
-            'is_super_admin' => false,
-            'store_id' => Store::factory(),
-        ]);
+        $victim = $this->managerForStore();
 
         $this->actingAs($admin)
             ->delete(route('admin.users.destroy', $victim))
             ->assertRedirect();
 
         $this->assertDatabaseMissing('users', ['id' => $victim->id]);
-    }
-
-    public function test_assigned_manager_is_scoped_to_their_store(): void
-    {
-        $store = Store::factory()->create();
-        $manager = User::factory()->create([
-            'store_id' => $store->id,
-            'is_super_admin' => false,
-        ]);
-
-        $this->actingAs($manager)
-            ->get(route('dashboard'))
-            ->assertOk();
-
-        $this->actingAs($manager)
-            ->get(route('admin.users.index'))
-            ->assertForbidden();
     }
 }

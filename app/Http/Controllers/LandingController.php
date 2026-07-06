@@ -13,10 +13,14 @@ class LandingController extends Controller
 {
     public function __invoke(Request $request): Response|RedirectResponse
     {
-        // Logged-in managers go straight to their assigned store's public board.
+        // Logged-in managers with exactly one store go straight to it. Managers
+        // with multiple stores land on the chooser so they can pick.
         $user = $request->user();
-        if ($user && ! $user->isSuperAdmin() && $user->store) {
-            return redirect()->route('leaderboard', $user->store);
+        if ($user && ! $user->isSuperAdmin()) {
+            $stores = $user->stores()->orderBy('number')->get();
+            if ($stores->count() === 1) {
+                return redirect()->route('leaderboard', $stores->first());
+            }
         }
 
         $stores = Store::query()

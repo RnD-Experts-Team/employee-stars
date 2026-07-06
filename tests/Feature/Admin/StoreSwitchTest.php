@@ -10,7 +10,7 @@ class StoreSwitchTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_super_admin_can_switch_active_store(): void
+    public function test_super_admin_can_switch_to_any_store(): void
     {
         $storeA = Store::factory()->create();
         $storeB = Store::factory()->create();
@@ -23,13 +23,27 @@ class StoreSwitchTest extends TestCase
         $this->assertSame($storeB->id, session('admin.current_store_id'));
     }
 
-    public function test_manager_cannot_switch_stores(): void
+    public function test_manager_can_switch_between_their_assigned_stores(): void
     {
-        $store = Store::factory()->create();
-        $user = $this->managerForStore();
+        $storeA = Store::factory()->create();
+        $storeB = Store::factory()->create();
+        $manager = $this->managerForStores($storeA, $storeB);
 
-        $this->actingAs($user)
-            ->post(route('admin.stores.switch', $store))
+        $this->actingAs($manager)
+            ->post(route('admin.stores.switch', $storeB))
+            ->assertRedirect(route('dashboard'));
+
+        $this->assertSame($storeB->id, session('admin.current_store_id'));
+    }
+
+    public function test_manager_cannot_switch_to_unassigned_store(): void
+    {
+        $ownStore = Store::factory()->create();
+        $unassignedStore = Store::factory()->create();
+        $manager = $this->managerForStore($ownStore);
+
+        $this->actingAs($manager)
+            ->post(route('admin.stores.switch', $unassignedStore))
             ->assertForbidden();
     }
 }

@@ -21,24 +21,37 @@ class DatabaseSeeder extends Seeder
             'name' => 'Super Admin',
             'email' => 'super@pneunited.com',
             'is_super_admin' => true,
-            'store_id' => null,
         ]);
 
         $brookhaven = Store::query()->where('number', '03795-00030')->first();
         $midtown = Store::query()->where('number', '03795-00041')->first();
 
-        User::factory()->create([
+        $brookhavenManager = User::factory()->create([
             'name' => 'Brookhaven Manager',
             'email' => 'brookhaven@pneunited.com',
-            'store_id' => $brookhaven?->id,
             'is_super_admin' => false,
         ]);
+        if ($brookhaven) {
+            $brookhavenManager->stores()->sync([$brookhaven->id]);
+        }
 
-        User::factory()->create([
+        $midtownManager = User::factory()->create([
             'name' => 'Midtown Manager',
             'email' => 'midtown@pneunited.com',
-            'store_id' => $midtown?->id,
             'is_super_admin' => false,
         ]);
+        if ($midtown) {
+            $midtownManager->stores()->sync([$midtown->id]);
+        }
+
+        // A multi-store manager, so the switcher UX is exercised out of the box.
+        $multiStoreManager = User::factory()->create([
+            'name' => 'Regional Manager',
+            'email' => 'multi@pneunited.com',
+            'is_super_admin' => false,
+        ]);
+        $multiStoreManager->stores()->sync(
+            array_filter([$brookhaven?->id, $midtown?->id]),
+        );
     }
 }

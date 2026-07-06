@@ -7,12 +7,12 @@ use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Fortify\TwoFactorAuthenticatable;
 
-#[Fillable(['name', 'email', 'password', 'store_id', 'is_super_admin'])]
+#[Fillable(['name', 'email', 'password', 'is_super_admin'])]
 #[Hidden(['password', 'two_factor_secret', 'two_factor_recovery_codes', 'remember_token'])]
 class User extends Authenticatable
 {
@@ -32,9 +32,9 @@ class User extends Authenticatable
         ];
     }
 
-    public function store(): BelongsTo
+    public function stores(): BelongsToMany
     {
-        return $this->belongsTo(Store::class);
+        return $this->belongsToMany(Store::class)->withTimestamps();
     }
 
     public function isSuperAdmin(): bool
@@ -44,6 +44,19 @@ class User extends Authenticatable
 
     public function isStoreManager(): bool
     {
-        return ! $this->isSuperAdmin() && $this->store_id !== null;
+        return ! $this->isSuperAdmin() && $this->stores()->exists();
+    }
+
+    public function canManageStore(?Store $store): bool
+    {
+        if (! $store) {
+            return false;
+        }
+
+        if ($this->isSuperAdmin()) {
+            return true;
+        }
+
+        return $this->stores()->whereKey($store->id)->exists();
     }
 }

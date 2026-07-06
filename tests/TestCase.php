@@ -17,23 +17,28 @@ abstract class TestCase extends BaseTestCase
     }
 
     /**
-     * Create a manager-role user attached to the given (or a new) store.
+     * Create a manager-role user attached to a single store (or a fresh one).
      */
     protected function managerForStore(?Store $store = null): User
     {
         $store ??= Store::factory()->create();
 
-        return User::factory()->create([
-            'store_id' => $store->id,
-            'is_super_admin' => false,
-        ]);
+        return $this->managerForStores($store);
+    }
+
+    /**
+     * Create a manager-role user attached to one or more stores via the pivot.
+     */
+    protected function managerForStores(Store ...$stores): User
+    {
+        $user = User::factory()->create(['is_super_admin' => false]);
+        $user->stores()->sync(collect($stores)->pluck('id')->all());
+
+        return $user;
     }
 
     protected function superAdmin(): User
     {
-        return User::factory()->create([
-            'store_id' => null,
-            'is_super_admin' => true,
-        ]);
+        return User::factory()->create(['is_super_admin' => true]);
     }
 }

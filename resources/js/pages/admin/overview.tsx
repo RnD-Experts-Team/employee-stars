@@ -187,14 +187,20 @@ function StoreCard({ store, onSwitch }: { store: OverviewStore; onSwitch: () => 
                 >
                     Public board →
                 </Link>
-                <button
-                    type="button"
-                    onClick={onSwitch}
-                    className="inline-flex items-center gap-1.5 rounded-full bg-zinc-900 px-3 py-1.5 text-xs font-semibold tracking-widest text-white uppercase transition-all hover:bg-zinc-800 active:translate-y-px"
-                >
-                    Manage
-                    <ArrowRight className="size-3.5" />
-                </button>
+                {store.can_manage ? (
+                    <button
+                        type="button"
+                        onClick={onSwitch}
+                        className="inline-flex items-center gap-1.5 rounded-full bg-zinc-900 px-3 py-1.5 text-xs font-semibold tracking-widest text-white uppercase transition-all hover:bg-zinc-800 active:translate-y-px"
+                    >
+                        Manage
+                        <ArrowRight className="size-3.5" />
+                    </button>
+                ) : (
+                    <span className="inline-flex items-center gap-1.5 rounded-full bg-muted px-3 py-1.5 text-xs font-semibold tracking-widest text-muted-foreground uppercase">
+                        View only
+                    </span>
+                )}
             </div>
         </div>
     );

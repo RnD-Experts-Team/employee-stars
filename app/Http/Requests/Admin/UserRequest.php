@@ -31,9 +31,17 @@ class UserRequest extends FormRequest
                 Rule::unique('users', 'email')->ignore($userId),
             ],
             'role' => ['required', 'in:super_admin,manager'],
-            'store_id' => [
+            'store_ids' => [
                 'nullable',
+                'array',
                 'required_if:role,manager',
+                Rule::when(
+                    $this->input('role') === 'manager',
+                    ['min:1'],
+                ),
+            ],
+            'store_ids.*' => [
+                'integer',
                 Rule::exists('stores', 'id'),
             ],
             'password' => [
@@ -48,7 +56,8 @@ class UserRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'store_id.required_if' => 'A store manager must be assigned to a store.',
+            'store_ids.required_if' => 'A store manager must be assigned to at least one store.',
+            'store_ids.min' => 'A store manager must be assigned to at least one store.',
         ];
     }
 }

@@ -35,6 +35,7 @@ const storeManagerNav: NavItem[] = [
     { title: 'Milestones', href: admin.milestones.index(), icon: Sparkles },
     { title: 'Scoreboard', href: admin.scoreboard.index(), icon: Crown },
     { title: 'Settings', href: admin.settings.edit(), icon: SettingsIcon },
+    { title: 'Network overview', href: admin.overview(), icon: LayoutDashboard },
 ];
 
 const superAdminNav: NavItem[] = [
@@ -71,13 +72,13 @@ export function AppSidebar() {
                         </SidebarMenuButton>
                     </SidebarMenuItem>
                 </SidebarMenu>
-                {isSuperAdmin && availableStores && availableStores.length > 0 && (
+                {availableStores && availableStores.length > 1 && (
                     <StoreSwitcher
                         stores={availableStores}
                         currentStore={currentStore}
                     />
                 )}
-                {!isSuperAdmin && currentStore && (
+                {availableStores && availableStores.length === 1 && currentStore && (
                     <div className="mx-2 mt-2 rounded-lg border border-sidebar-border/60 bg-sidebar-accent/30 px-3 py-2">
                         <div className="font-display text-[10px] font-semibold tracking-widest text-muted-foreground uppercase">
                             Store

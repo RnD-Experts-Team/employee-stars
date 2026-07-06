@@ -15,18 +15,22 @@ class UserController extends Controller
     public function index(): Response
     {
         $users = User::query()
-            ->with('store:id,number,name')
+            ->with('stores:id,number,name')
             ->orderByDesc('is_super_admin')
             ->orderBy('name')
-            ->get(['id', 'name', 'email', 'store_id', 'is_super_admin'])
+            ->get(['id', 'name', 'email', 'is_super_admin'])
             ->map(fn (User $user) => [
                 'id' => $user->id,
                 'name' => $user->name,
                 'email' => $user->email,
                 'is_super_admin' => $user->is_super_admin,
-                'store' => $user->store
-                    ? ['id' => $user->store->id, 'number' => $user->store->number, 'name' => $user->store->name]
-                    : null,
+                'stores' => $user->stores
+                    ->map(fn (Store $store) => [
+                        'id' => $store->id,
+                        'number' => $store->number,
+                        'name' => $store->name,
+                    ])
+                    ->values(),
             ]);
 
         return Inertia::render('admin/users', [
@@ -41,13 +45,14 @@ class UserController extends Controller
     {
         $data = $request->validated();
 
-        User::create([
+        $user = User::create([
             'name' => $data['name'],
             'email' => $data['email'],
             'password' => $data['password'], // hashed via the model cast
             'is_super_admin' => $data['role'] === 'super_admin',
-            'store_id' => $data['role'] === 'super_admin' ? null : $data['store_id'],
         ]);
+
+        $this->syncStores($user, $data);
 
         return back()->with('success', 'User created.');
     }
@@ -60,7 +65,6 @@ class UserController extends Controller
             'name' => $data['name'],
             'email' => $data['email'],
             'is_super_admin' => $data['role'] === 'super_admin',
-            'store_id' => $data['role'] === 'super_admin' ? null : $data['store_id'],
         ]);
 
         if (! empty($data['password'])) {
@@ -68,6 +72,8 @@ class UserController extends Controller
         }
 
         $user->save();
+
+        $this->syncStores($user, $data);
 
         return back()->with('success', 'User updated.');
     }
@@ -81,5 +87,19 @@ class UserController extends Controller
         $user->delete();
 
         return back()->with('success', 'User removed.');
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     */
+    private function syncStores(User $user, array $data): void
+    {
+        if ($data['role'] === 'super_admin') {
+            $user->stores()->detach();
+
+            return;
+        }
+
+        $user->stores()->sync($data['store_ids'] ?? []);
     }
 }

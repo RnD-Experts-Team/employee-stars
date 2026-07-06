@@ -42,20 +42,24 @@ Route::middleware(['auth', 'verified', 'store.context'])
 
         Route::get('settings/board', [SettingsController::class, 'edit'])->name('admin.settings.edit');
         Route::put('settings/board', [SettingsController::class, 'update'])->name('admin.settings.update');
+
+        // Network overview is visible to every authenticated user; the payload
+        // exposes a `can_manage` flag so read-only managers see a locked row.
+        Route::get('overview', OverviewController::class)->name('admin.overview');
+
+        // Store switch is available to any user with at least one authorized
+        // store; the controller enforces per-store authorization internally.
+        Route::post('stores/{store}/switch', StoreSwitchController::class)
+            ->name('admin.stores.switch');
     });
 
 // Super admin only
 Route::middleware(['auth', 'verified', 'super.admin'])
     ->prefix('dashboard')
     ->group(function () {
-        Route::get('overview', OverviewController::class)->name('admin.overview');
-
         Route::resource('stores', StoreController::class)
             ->except(['create', 'show', 'edit'])
             ->names('admin.stores');
-
-        Route::post('stores/{store}/switch', StoreSwitchController::class)
-            ->name('admin.stores.switch');
 
         Route::resource('users', UserController::class)
             ->except(['create', 'show', 'edit'])

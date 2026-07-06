@@ -2,7 +2,6 @@
 
 namespace App\Http\Middleware;
 
-use App\Models\Store;
 use App\Support\CurrentStore;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
@@ -39,6 +38,11 @@ class HandleInertiaRequests extends Middleware
     {
         $user = $request->user();
         $currentStore = $user ? CurrentStore::resolve($user) : null;
+        $availableStores = $user
+            ? CurrentStore::authorizedStores($user)->map(
+                fn ($store) => $store->only(['id', 'number', 'name', 'is_active']),
+            )->values()
+            : null;
 
         return [
             ...parent::share($request),
@@ -47,9 +51,7 @@ class HandleInertiaRequests extends Middleware
                 'user' => $user,
                 'isSuperAdmin' => (bool) $user?->isSuperAdmin(),
                 'currentStore' => $currentStore?->only(['id', 'number', 'name', 'target_points']),
-                'availableStores' => $user?->isSuperAdmin()
-                    ? Store::query()->orderBy('number')->get(['id', 'number', 'name', 'is_active'])
-                    : null,
+                'availableStores' => $availableStores,
             ],
             'flash' => [
                 'success' => $request->session()->get('success'),

@@ -66,20 +66,7 @@ export default function UsersPage({ users, stores }: UsersPageProps) {
                                             <RolePill superAdmin={user.is_super_admin} />
                                         </td>
                                         <td className="px-5 py-3">
-                                            {user.store ? (
-                                                <span className="font-mono text-xs">
-                                                    {user.store.number}
-                                                    {user.store.name && (
-                                                        <span className="ml-1.5 text-muted-foreground">
-                                                            {user.store.name}
-                                                        </span>
-                                                    )}
-                                                </span>
-                                            ) : (
-                                                <span className="text-xs text-muted-foreground">
-                                                    All stores
-                                                </span>
-                                            )}
+                                            <UserStoresCell user={user} />
                                         </td>
                                         <td className="px-5 py-3 text-right">
                                             <div className="flex items-center justify-end gap-1">
@@ -117,6 +104,53 @@ function Th({ children }: { children: React.ReactNode }) {
         <th className="px-5 py-3 font-display text-[11px] font-semibold tracking-widest text-muted-foreground uppercase">
             {children}
         </th>
+    );
+}
+
+function UserStoresCell({ user }: { user: AdminUser }) {
+    if (user.is_super_admin) {
+        return <span className="text-xs text-muted-foreground">All stores</span>;
+    }
+
+    if (user.stores.length === 0) {
+        return (
+            <span className="text-xs text-red-600">
+                No store assigned
+            </span>
+        );
+    }
+
+    if (user.stores.length === 1) {
+        const store = user.stores[0];
+
+        return (
+            <span className="font-mono text-xs">
+                {store.number}
+                {store.name && (
+                    <span className="ml-1.5 text-muted-foreground">
+                        {store.name}
+                    </span>
+                )}
+            </span>
+        );
+    }
+
+    return (
+        <div className="flex flex-wrap items-center gap-1.5">
+            {user.stores.slice(0, 2).map((store) => (
+                <span
+                    key={store.id}
+                    className="inline-flex items-center rounded-full bg-blue-50 px-2 py-0.5 font-mono text-[10px] font-semibold text-blue-700"
+                >
+                    {store.number}
+                </span>
+            ))}
+            {user.stores.length > 2 && (
+                <span className="inline-flex items-center rounded-full bg-muted px-2 py-0.5 text-[10px] font-semibold tracking-wider text-muted-foreground uppercase">
+                    +{user.stores.length - 2} more
+                </span>
+            )}
+        </div>
     );
 }
 
@@ -159,7 +193,7 @@ type UserFormData = {
     password: string;
     password_confirmation: string;
     role: 'super_admin' | 'manager';
-    store_id: string;
+    store_ids: number[];
 };
 
 function NewUserDialog({ stores }: { stores: StoreSummary[] }) {
@@ -170,14 +204,14 @@ function NewUserDialog({ stores }: { stores: StoreSummary[] }) {
         password: '',
         password_confirmation: '',
         role: 'manager',
-        store_id: stores[0] ? String(stores[0].id) : '',
+        store_ids: [],
     });
 
     const submit = (event: FormEvent) => {
         event.preventDefault();
         form.transform((data) => ({
             ...data,
-            store_id: data.role === 'super_admin' ? null : data.store_id,
+            store_ids: data.role === 'super_admin' ? [] : data.store_ids,
         }));
         form.post(admin.users.store().url, {
             preserveScroll: true,
@@ -228,14 +262,14 @@ function EditUserDialog({
         password: '',
         password_confirmation: '',
         role: user.is_super_admin ? 'super_admin' : 'manager',
-        store_id: user.store ? String(user.store.id) : (stores[0] ? String(stores[0].id) : ''),
+        store_ids: user.stores.map((store) => store.id),
     });
 
     const submit = (event: FormEvent) => {
         event.preventDefault();
         form.transform((data) => ({
             ...data,
-            store_id: data.role === 'super_admin' ? null : data.store_id,
+            store_ids: data.role === 'super_admin' ? [] : data.store_ids,
         }));
         form.put(admin.users.update(user.id).url, {
             preserveScroll: true,
@@ -316,29 +350,63 @@ function UserFields({
                     <option value="super_admin">Super admin</option>
                 </select>
                 <p className="text-xs text-muted-foreground">
-                    Super admins see every store. Managers are locked to one store.
+                    Super admins see and edit every store. Managers can only edit the stores checked below.
                 </p>
             </div>
 
             {data.role === 'manager' && (
                 <div className="grid gap-2">
-                    <Label htmlFor="user-store">Assigned store</Label>
-                    <select
-                        id="user-store"
-                        value={data.store_id}
-                        onChange={(e) => setData('store_id', e.target.value)}
-                        className="rounded-md border border-input bg-background px-3 py-2 text-sm"
-                    >
-                        <option value="">Select a store…</option>
-                        {stores.map((store) => (
-                            <option key={store.id} value={store.id}>
-                                {store.number}
-                                {store.name ? ` · ${store.name}` : ''}
-                            </option>
-                        ))}
-                    </select>
-                    {errors.store_id && (
-                        <p className="text-xs text-red-600">{errors.store_id}</p>
+                    <Label>Assigned stores</Label>
+                    <div className="max-h-64 overflow-y-auto rounded-md border border-input bg-background p-1">
+                        {stores.length === 0 ? (
+                            <p className="px-3 py-2 text-xs text-muted-foreground">
+                                No stores exist yet. Create a store first.
+                            </p>
+                        ) : (
+                            stores.map((store) => {
+                                const checked = data.store_ids.includes(store.id);
+
+                                return (
+                                    <label
+                                        key={store.id}
+                                        className="flex cursor-pointer items-center gap-3 rounded-sm px-3 py-2 hover:bg-muted/60"
+                                    >
+                                        <input
+                                            type="checkbox"
+                                            className="size-4 rounded border-border"
+                                            checked={checked}
+                                            onChange={(e) => {
+                                                if (e.target.checked) {
+                                                    setData('store_ids', [
+                                                        ...data.store_ids,
+                                                        store.id,
+                                                    ]);
+                                                } else {
+                                                    setData(
+                                                        'store_ids',
+                                                        data.store_ids.filter((id) => id !== store.id),
+                                                    );
+                                                }
+                                            }}
+                                        />
+                                        <span className="flex-1 min-w-0">
+                                            <span className="font-mono text-xs">{store.number}</span>
+                                            {store.name && (
+                                                <span className="ml-2 text-xs text-muted-foreground">
+                                                    {store.name}
+                                                </span>
+                                            )}
+                                        </span>
+                                    </label>
+                                );
+                            })
+                        )}
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                        {data.store_ids.length} store{data.store_ids.length === 1 ? '' : 's'} selected.
+                    </p>
+                    {errors.store_ids && (
+                        <p className="text-xs text-red-600">{errors.store_ids}</p>
                     )}
                 </div>
             )}

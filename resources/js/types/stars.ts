@@ -79,6 +79,7 @@ export type OverviewStore = StoreSummary & {
     total_points: number;
     team_progress: number;
     leader: { name: string; points: number } | null;
+    can_manage: boolean;
 };
 
 export type AdminUser = {
@@ -86,7 +87,7 @@ export type AdminUser = {
     name: string;
     email: string;
     is_super_admin: boolean;
-    store: { id: number; number: string; name: string | null } | null;
+    stores: { id: number; number: string; name: string | null }[];
 };
 
 export type AdminSharedProps = {
