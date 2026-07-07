@@ -5,6 +5,7 @@ import type {FormEvent} from 'react';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
+    DialogBody,
     DialogContent,
     DialogFooter,
     DialogHeader,
@@ -156,40 +157,42 @@ function NewEmployeeDialog() {
                 <DialogHeader>
                     <DialogTitle className="font-display tracking-tight uppercase">Add employee</DialogTitle>
                 </DialogHeader>
-                <form onSubmit={submit} className="grid gap-4">
-                    <div className="grid gap-2">
-                        <Label htmlFor="name">Name</Label>
-                        <Input
-                            id="name"
-                            value={data.name}
-                            onChange={(e) => setData('name', e.target.value)}
-                            autoFocus
-                        />
-                        {errors.name && <p className="text-xs text-red-600">{errors.name}</p>}
-                    </div>
-
-                    <div className="grid gap-2">
-                        <Label>Avatar color</Label>
-                        <div className="flex flex-wrap gap-2">
-                            {COLOR_OPTIONS.map((color) => (
-                                <button
-                                    key={color}
-                                    type="button"
-                                    onClick={() => setData('avatar_color', color)}
-                                    className={`size-8 rounded-full transition-all ${
-                                        data.avatar_color === color
-                                            ? 'ring-2 ring-offset-2 ring-zinc-900'
-                                            : ''
-                                    }`}
-                                    style={{ backgroundColor: color }}
-                                    aria-label={color}
-                                />
-                            ))}
+                <form onSubmit={submit} className="flex min-h-0 flex-1 flex-col">
+                    <DialogBody>
+                        <div className="grid gap-2">
+                            <Label htmlFor="name">Name</Label>
+                            <Input
+                                id="name"
+                                value={data.name}
+                                onChange={(e) => setData('name', e.target.value)}
+                                autoFocus
+                            />
+                            {errors.name && <p className="text-xs text-red-600">{errors.name}</p>}
                         </div>
-                    </div>
+
+                        <div className="grid gap-2">
+                            <Label>Avatar color</Label>
+                            <div className="flex flex-wrap gap-2">
+                                {COLOR_OPTIONS.map((color) => (
+                                    <button
+                                        key={color}
+                                        type="button"
+                                        onClick={() => setData('avatar_color', color)}
+                                        className={`size-9 rounded-full transition-all ${
+                                            data.avatar_color === color
+                                                ? 'ring-2 ring-offset-2 ring-zinc-900'
+                                                : ''
+                                        }`}
+                                        style={{ backgroundColor: color }}
+                                        aria-label={color}
+                                    />
+                                ))}
+                            </div>
+                        </div>
+                    </DialogBody>
 
                     <DialogFooter>
-                        <Button type="submit" disabled={processing}>
+                        <Button type="submit" disabled={processing} className="w-full sm:w-auto">
                             {processing ? 'Saving…' : 'Add employee'}
                         </Button>
                     </DialogFooter>
@@ -228,49 +231,51 @@ function EditEmployeeDialog({
                         Edit {employee.name}
                     </DialogTitle>
                 </DialogHeader>
-                <form onSubmit={submit} className="grid gap-4">
-                    <div className="grid gap-2">
-                        <Label htmlFor="edit-name">Name</Label>
-                        <Input
-                            id="edit-name"
-                            value={data.name}
-                            onChange={(e) => setData('name', e.target.value)}
-                        />
-                        {errors.name && <p className="text-xs text-red-600">{errors.name}</p>}
-                    </div>
-
-                    <div className="grid gap-2">
-                        <Label>Avatar color</Label>
-                        <div className="flex flex-wrap gap-2">
-                            {COLOR_OPTIONS.map((color) => (
-                                <button
-                                    key={color}
-                                    type="button"
-                                    onClick={() => setData('avatar_color', color)}
-                                    className={`size-8 rounded-full transition-all ${
-                                        data.avatar_color === color
-                                            ? 'ring-2 ring-offset-2 ring-zinc-900'
-                                            : ''
-                                    }`}
-                                    style={{ backgroundColor: color }}
-                                    aria-label={color}
-                                />
-                            ))}
+                <form onSubmit={submit} className="flex min-h-0 flex-1 flex-col">
+                    <DialogBody>
+                        <div className="grid gap-2">
+                            <Label htmlFor="edit-name">Name</Label>
+                            <Input
+                                id="edit-name"
+                                value={data.name}
+                                onChange={(e) => setData('name', e.target.value)}
+                            />
+                            {errors.name && <p className="text-xs text-red-600">{errors.name}</p>}
                         </div>
-                    </div>
 
-                    <label className="flex items-center gap-2 text-sm">
-                        <input
-                            type="checkbox"
-                            checked={data.is_active}
-                            onChange={(e) => setData('is_active', e.target.checked)}
-                            className="size-4 rounded border-border"
-                        />
-                        Show on the public leaderboard
-                    </label>
+                        <div className="grid gap-2">
+                            <Label>Avatar color</Label>
+                            <div className="flex flex-wrap gap-2">
+                                {COLOR_OPTIONS.map((color) => (
+                                    <button
+                                        key={color}
+                                        type="button"
+                                        onClick={() => setData('avatar_color', color)}
+                                        className={`size-9 rounded-full transition-all ${
+                                            data.avatar_color === color
+                                                ? 'ring-2 ring-offset-2 ring-zinc-900'
+                                                : ''
+                                        }`}
+                                        style={{ backgroundColor: color }}
+                                        aria-label={color}
+                                    />
+                                ))}
+                            </div>
+                        </div>
+
+                        <label className="flex cursor-pointer items-center gap-2 text-sm">
+                            <input
+                                type="checkbox"
+                                checked={data.is_active}
+                                onChange={(e) => setData('is_active', e.target.checked)}
+                                className="size-4 shrink-0 rounded border-border"
+                            />
+                            Show on the public leaderboard
+                        </label>
+                    </DialogBody>
 
                     <DialogFooter>
-                        <Button type="submit" disabled={processing}>
+                        <Button type="submit" disabled={processing} className="w-full sm:w-auto">
                             {processing ? 'Saving…' : 'Save changes'}
                         </Button>
                     </DialogFooter>

@@ -7,10 +7,12 @@ import PasswordInput from '@/components/password-input';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
+    DialogBody,
     DialogClose,
     DialogContent,
     DialogDescription,
     DialogFooter,
+    DialogHeader,
     DialogTitle,
     DialogTrigger,
 } from '@/components/ui/dialog';
@@ -44,15 +46,16 @@ export default function DeleteUser() {
                         </Button>
                     </DialogTrigger>
                     <DialogContent>
-                        <DialogTitle>
-                            Are you sure you want to delete your account?
-                        </DialogTitle>
-                        <DialogDescription>
-                            Once your account is deleted, all of its resources
-                            and data will also be permanently deleted. Please
-                            enter your password to confirm you would like to
-                            permanently delete your account.
-                        </DialogDescription>
+                        <DialogHeader>
+                            <DialogTitle>
+                                Delete your account?
+                            </DialogTitle>
+                            <DialogDescription>
+                                Once your account is deleted, all of its resources
+                                and data will also be permanently deleted. Enter
+                                your password to confirm.
+                            </DialogDescription>
+                        </DialogHeader>
 
                         <Form
                             {...ProfileController.destroy.form()}
@@ -61,28 +64,30 @@ export default function DeleteUser() {
                             }}
                             onError={() => passwordInput.current?.focus()}
                             resetOnSuccess
-                            className="space-y-6"
+                            className="flex min-h-0 flex-1 flex-col"
                         >
                             {({ resetAndClearErrors, processing, errors }) => (
                                 <>
-                                    <div className="grid gap-2">
-                                        <Label
-                                            htmlFor="password"
-                                            className="sr-only"
-                                        >
-                                            Password
-                                        </Label>
+                                    <DialogBody>
+                                        <div className="grid gap-2">
+                                            <Label
+                                                htmlFor="password"
+                                                className="sr-only"
+                                            >
+                                                Password
+                                            </Label>
 
-                                        <PasswordInput
-                                            id="password"
-                                            name="password"
-                                            ref={passwordInput}
-                                            placeholder="Password"
-                                            autoComplete="current-password"
-                                        />
+                                            <PasswordInput
+                                                id="password"
+                                                name="password"
+                                                ref={passwordInput}
+                                                placeholder="Password"
+                                                autoComplete="current-password"
+                                            />
 
-                                        <InputError message={errors.password} />
-                                    </div>
+                                            <InputError message={errors.password} />
+                                        </div>
+                                    </DialogBody>
 
                                     <DialogFooter className="gap-2">
                                         <DialogClose asChild>
@@ -91,6 +96,7 @@ export default function DeleteUser() {
                                                 onClick={() =>
                                                     resetAndClearErrors()
                                                 }
+                                                className="w-full sm:w-auto"
                                             >
                                                 Cancel
                                             </Button>
@@ -99,6 +105,7 @@ export default function DeleteUser() {
                                         <Button
                                             variant="destructive"
                                             disabled={processing}
+                                            className="w-full sm:w-auto"
                                             asChild
                                         >
                                             <button

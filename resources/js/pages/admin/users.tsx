@@ -5,6 +5,7 @@ import type {FormEvent} from 'react';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
+    DialogBody,
     DialogContent,
     DialogFooter,
     DialogHeader,
@@ -315,133 +316,138 @@ function UserFields({
     const { data, setData, errors, processing } = form;
 
     return (
-        <form onSubmit={onSubmit} className="grid gap-4">
-            <div className="grid gap-2">
-                <Label htmlFor="user-name">Name</Label>
-                <Input
-                    id="user-name"
-                    value={data.name}
-                    onChange={(e) => setData('name', e.target.value)}
-                    autoFocus
-                />
-                {errors.name && <p className="text-xs text-red-600">{errors.name}</p>}
-            </div>
-
-            <div className="grid gap-2">
-                <Label htmlFor="user-email">Email</Label>
-                <Input
-                    id="user-email"
-                    type="email"
-                    value={data.email}
-                    onChange={(e) => setData('email', e.target.value)}
-                />
-                {errors.email && <p className="text-xs text-red-600">{errors.email}</p>}
-            </div>
-
-            <div className="grid gap-2">
-                <Label htmlFor="user-role">Role</Label>
-                <select
-                    id="user-role"
-                    value={data.role}
-                    onChange={(e) => setData('role', e.target.value as UserFormData['role'])}
-                    className="rounded-md border border-input bg-background px-3 py-2 text-sm"
-                >
-                    <option value="manager">Store manager</option>
-                    <option value="super_admin">Super admin</option>
-                </select>
-                <p className="text-xs text-muted-foreground">
-                    Super admins see and edit every store. Managers can only edit the stores checked below.
-                </p>
-            </div>
-
-            {data.role === 'manager' && (
+        <form onSubmit={onSubmit} className="flex min-h-0 flex-1 flex-col">
+            <DialogBody>
                 <div className="grid gap-2">
-                    <Label>Assigned stores</Label>
-                    <div className="max-h-64 overflow-y-auto rounded-md border border-input bg-background p-1">
-                        {stores.length === 0 ? (
-                            <p className="px-3 py-2 text-xs text-muted-foreground">
-                                No stores exist yet. Create a store first.
-                            </p>
-                        ) : (
-                            stores.map((store) => {
-                                const checked = data.store_ids.includes(store.id);
+                    <Label htmlFor="user-name">Name</Label>
+                    <Input
+                        id="user-name"
+                        value={data.name}
+                        onChange={(e) => setData('name', e.target.value)}
+                        autoFocus
+                    />
+                    {errors.name && <p className="text-xs text-red-600">{errors.name}</p>}
+                </div>
 
-                                return (
-                                    <label
-                                        key={store.id}
-                                        className="flex cursor-pointer items-center gap-3 rounded-sm px-3 py-2 hover:bg-muted/60"
-                                    >
-                                        <input
-                                            type="checkbox"
-                                            className="size-4 rounded border-border"
-                                            checked={checked}
-                                            onChange={(e) => {
-                                                if (e.target.checked) {
-                                                    setData('store_ids', [
-                                                        ...data.store_ids,
-                                                        store.id,
-                                                    ]);
-                                                } else {
-                                                    setData(
-                                                        'store_ids',
-                                                        data.store_ids.filter((id) => id !== store.id),
-                                                    );
-                                                }
-                                            }}
-                                        />
-                                        <span className="flex-1 min-w-0">
-                                            <span className="font-mono text-xs">{store.number}</span>
-                                            {store.name && (
-                                                <span className="ml-2 text-xs text-muted-foreground">
-                                                    {store.name}
-                                                </span>
-                                            )}
-                                        </span>
-                                    </label>
-                                );
-                            })
+                <div className="grid gap-2">
+                    <Label htmlFor="user-email">Email</Label>
+                    <Input
+                        id="user-email"
+                        type="email"
+                        inputMode="email"
+                        autoCapitalize="none"
+                        autoComplete="email"
+                        value={data.email}
+                        onChange={(e) => setData('email', e.target.value)}
+                    />
+                    {errors.email && <p className="text-xs text-red-600">{errors.email}</p>}
+                </div>
+
+                <div className="grid gap-2">
+                    <Label htmlFor="user-role">Role</Label>
+                    <select
+                        id="user-role"
+                        value={data.role}
+                        onChange={(e) => setData('role', e.target.value as UserFormData['role'])}
+                        className="h-10 rounded-md border border-input bg-background px-3 text-sm"
+                    >
+                        <option value="manager">Store manager</option>
+                        <option value="super_admin">Super admin</option>
+                    </select>
+                    <p className="text-xs text-muted-foreground">
+                        Super admins see and edit every store. Managers can only edit the stores checked below.
+                    </p>
+                </div>
+
+                {data.role === 'manager' && (
+                    <div className="grid gap-2">
+                        <Label>Assigned stores</Label>
+                        <div className="max-h-64 overflow-y-auto rounded-md border border-input bg-background p-1">
+                            {stores.length === 0 ? (
+                                <p className="px-3 py-2 text-xs text-muted-foreground">
+                                    No stores exist yet. Create a store first.
+                                </p>
+                            ) : (
+                                stores.map((store) => {
+                                    const checked = data.store_ids.includes(store.id);
+
+                                    return (
+                                        <label
+                                            key={store.id}
+                                            className="flex cursor-pointer items-center gap-3 rounded-sm px-3 py-2 hover:bg-muted/60"
+                                        >
+                                            <input
+                                                type="checkbox"
+                                                className="size-4 shrink-0 rounded border-border"
+                                                checked={checked}
+                                                onChange={(e) => {
+                                                    if (e.target.checked) {
+                                                        setData('store_ids', [
+                                                            ...data.store_ids,
+                                                            store.id,
+                                                        ]);
+                                                    } else {
+                                                        setData(
+                                                            'store_ids',
+                                                            data.store_ids.filter((id) => id !== store.id),
+                                                        );
+                                                    }
+                                                }}
+                                            />
+                                            <span className="flex min-w-0 flex-1 flex-wrap items-baseline gap-x-2">
+                                                <span className="font-mono text-xs">{store.number}</span>
+                                                {store.name && (
+                                                    <span className="truncate text-xs text-muted-foreground">
+                                                        {store.name}
+                                                    </span>
+                                                )}
+                                            </span>
+                                        </label>
+                                    );
+                                })
+                            )}
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                            {data.store_ids.length} store{data.store_ids.length === 1 ? '' : 's'} selected.
+                        </p>
+                        {errors.store_ids && (
+                            <p className="text-xs text-red-600">{errors.store_ids}</p>
                         )}
                     </div>
-                    <p className="text-xs text-muted-foreground">
-                        {data.store_ids.length} store{data.store_ids.length === 1 ? '' : 's'} selected.
-                    </p>
-                    {errors.store_ids && (
-                        <p className="text-xs text-red-600">{errors.store_ids}</p>
-                    )}
-                </div>
-            )}
+                )}
 
-            <div className="grid grid-cols-2 gap-4">
-                <div className="grid gap-2">
-                    <Label htmlFor="user-password">Password</Label>
-                    <Input
-                        id="user-password"
-                        type="password"
-                        value={data.password}
-                        onChange={(e) => setData('password', e.target.value)}
-                        autoComplete="new-password"
-                    />
-                    {errors.password && (
-                        <p className="text-xs text-red-600">{errors.password}</p>
-                    )}
+                <div className="grid gap-4 sm:grid-cols-2">
+                    <div className="grid gap-2">
+                        <Label htmlFor="user-password">Password</Label>
+                        <Input
+                            id="user-password"
+                            type="password"
+                            value={data.password}
+                            onChange={(e) => setData('password', e.target.value)}
+                            autoComplete="new-password"
+                        />
+                        {errors.password && (
+                            <p className="text-xs text-red-600">{errors.password}</p>
+                        )}
+                    </div>
+                    <div className="grid gap-2">
+                        <Label htmlFor="user-password-confirm">Confirm</Label>
+                        <Input
+                            id="user-password-confirm"
+                            type="password"
+                            value={data.password_confirmation}
+                            onChange={(e) =>
+                                setData('password_confirmation', e.target.value)
+                            }
+                            autoComplete="new-password"
+                        />
+                    </div>
                 </div>
-                <div className="grid gap-2">
-                    <Label htmlFor="user-password-confirm">Confirm</Label>
-                    <Input
-                        id="user-password-confirm"
-                        type="password"
-                        value={data.password_confirmation}
-                        onChange={(e) =>
-                            setData('password_confirmation', e.target.value)
-                        }
-                        autoComplete="new-password"
-                    />
-                </div>
-            </div>
-            <p className="-mt-2 text-xs text-muted-foreground">{passwordHint}</p>
+                <p className="-mt-1 text-xs text-muted-foreground">{passwordHint}</p>
+            </DialogBody>
 
             <DialogFooter>
-                <Button type="submit" disabled={processing}>
+                <Button type="submit" disabled={processing} className="w-full sm:w-auto">
                     {processing ? 'Saving…' : submitLabel}
                 </Button>
             </DialogFooter>

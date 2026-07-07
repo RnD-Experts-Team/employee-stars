@@ -5,6 +5,7 @@ import type {FormEvent} from 'react';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
+    DialogBody,
     DialogContent,
     DialogFooter,
     DialogHeader,
@@ -250,82 +251,85 @@ function StoreFields({
     const { data, setData, errors, processing } = form;
 
     return (
-        <form onSubmit={onSubmit} className="grid gap-4">
-            <div className="grid grid-cols-2 gap-4">
-                <div className="grid gap-2">
-                    <Label htmlFor="store-number">Store number</Label>
-                    <Input
-                        id="store-number"
-                        value={data.number}
-                        onChange={(e) => setData('number', e.target.value)}
-                        placeholder="03795-00012"
-                        autoFocus
-                    />
-                    {errors.number && <p className="text-xs text-red-600">{errors.number}</p>}
+        <form onSubmit={onSubmit} className="flex min-h-0 flex-1 flex-col">
+            <DialogBody>
+                <div className="grid gap-4 sm:grid-cols-2">
+                    <div className="grid gap-2">
+                        <Label htmlFor="store-number">Store number</Label>
+                        <Input
+                            id="store-number"
+                            value={data.number}
+                            onChange={(e) => setData('number', e.target.value)}
+                            placeholder="03795-00012"
+                            autoFocus
+                        />
+                        {errors.number && <p className="text-xs text-red-600">{errors.number}</p>}
+                    </div>
+                    <div className="grid gap-2">
+                        <Label htmlFor="store-target">Target points</Label>
+                        <Input
+                            id="store-target"
+                            type="number"
+                            inputMode="numeric"
+                            min={1}
+                            max={1000}
+                            value={data.target_points}
+                            onChange={(e) =>
+                                setData('target_points', parseInt(e.target.value, 10) || 1)
+                            }
+                        />
+                        {errors.target_points && (
+                            <p className="text-xs text-red-600">{errors.target_points}</p>
+                        )}
+                    </div>
                 </div>
+
                 <div className="grid gap-2">
-                    <Label htmlFor="store-target">Target points</Label>
+                    <Label htmlFor="store-name">Display name (optional)</Label>
                     <Input
-                        id="store-target"
-                        type="number"
-                        min={1}
-                        max={1000}
-                        value={data.target_points}
-                        onChange={(e) =>
-                            setData('target_points', parseInt(e.target.value, 10) || 1)
-                        }
+                        id="store-name"
+                        value={data.name}
+                        onChange={(e) => setData('name', e.target.value)}
+                        placeholder="Brookhaven"
                     />
-                    {errors.target_points && (
-                        <p className="text-xs text-red-600">{errors.target_points}</p>
+                    {errors.name && <p className="text-xs text-red-600">{errors.name}</p>}
+                </div>
+
+                <div className="grid gap-2">
+                    <Label htmlFor="store-board-title">Board title</Label>
+                    <Input
+                        id="store-board-title"
+                        value={data.board_title}
+                        onChange={(e) => setData('board_title', e.target.value)}
+                    />
+                    {errors.board_title && (
+                        <p className="text-xs text-red-600">{errors.board_title}</p>
                     )}
                 </div>
-            </div>
 
-            <div className="grid gap-2">
-                <Label htmlFor="store-name">Display name (optional)</Label>
-                <Input
-                    id="store-name"
-                    value={data.name}
-                    onChange={(e) => setData('name', e.target.value)}
-                    placeholder="Brookhaven"
-                />
-                {errors.name && <p className="text-xs text-red-600">{errors.name}</p>}
-            </div>
+                <div className="grid gap-2">
+                    <Label htmlFor="store-board-tagline">Tagline</Label>
+                    <Input
+                        id="store-board-tagline"
+                        value={data.board_tagline}
+                        onChange={(e) => setData('board_tagline', e.target.value)}
+                        placeholder="FOCUS. EXECUTE. DELIVER. REPEAT."
+                    />
+                </div>
 
-            <div className="grid gap-2">
-                <Label htmlFor="store-board-title">Board title</Label>
-                <Input
-                    id="store-board-title"
-                    value={data.board_title}
-                    onChange={(e) => setData('board_title', e.target.value)}
-                />
-                {errors.board_title && (
-                    <p className="text-xs text-red-600">{errors.board_title}</p>
-                )}
-            </div>
-
-            <div className="grid gap-2">
-                <Label htmlFor="store-board-tagline">Tagline</Label>
-                <Input
-                    id="store-board-tagline"
-                    value={data.board_tagline}
-                    onChange={(e) => setData('board_tagline', e.target.value)}
-                    placeholder="FOCUS. EXECUTE. DELIVER. REPEAT."
-                />
-            </div>
-
-            <label className="flex items-center gap-2 text-sm">
-                <input
-                    type="checkbox"
-                    checked={data.is_active}
-                    onChange={(e) => setData('is_active', e.target.checked)}
-                    className="size-4 rounded border-border"
-                />
-                Active and visible on the public network
-            </label>
+                <label className="flex cursor-pointer items-center gap-2 text-sm">
+                    <input
+                        type="checkbox"
+                        checked={data.is_active}
+                        onChange={(e) => setData('is_active', e.target.checked)}
+                        className="size-4 shrink-0 rounded border-border"
+                    />
+                    Active and visible on the public network
+                </label>
+            </DialogBody>
 
             <DialogFooter>
-                <Button type="submit" disabled={processing}>
+                <Button type="submit" disabled={processing} className="w-full sm:w-auto">
                     {processing ? 'Saving…' : submitLabel}
                 </Button>
             </DialogFooter>

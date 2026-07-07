@@ -5,6 +5,7 @@ import type {FormEvent} from 'react';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
+    DialogBody,
     DialogContent,
     DialogFooter,
     DialogHeader,
@@ -230,76 +231,79 @@ function MilestoneFields({
     const { data, setData, errors, processing } = form;
 
     return (
-        <form onSubmit={onSubmit} className="grid gap-4">
-            <div className="grid grid-cols-2 gap-4">
-                <div className="grid gap-2">
-                    <Label htmlFor="ms-name">Name</Label>
-                    <Input
-                        id="ms-name"
-                        value={data.name}
-                        onChange={(e) => setData('name', e.target.value)}
-                        autoFocus
-                    />
-                    {errors.name && <p className="text-xs text-red-600">{errors.name}</p>}
-                </div>
-                <div className="grid gap-2">
-                    <Label htmlFor="ms-max">Max points</Label>
-                    <Input
-                        id="ms-max"
-                        type="number"
-                        min={1}
-                        max={100}
-                        value={data.max_points}
-                        onChange={(e) => setData('max_points', parseInt(e.target.value, 10) || 1)}
-                    />
-                    {errors.max_points && <p className="text-xs text-red-600">{errors.max_points}</p>}
-                </div>
-            </div>
-
-            <div className="grid gap-2">
-                <Label>Color</Label>
-                <div className="flex flex-wrap gap-2">
-                    {COLOR_OPTIONS.map((c) => (
-                        <button
-                            key={c}
-                            type="button"
-                            onClick={() => setData('color', c)}
-                            className={`size-8 rounded-lg transition-all ${
-                                data.color === c ? 'ring-2 ring-offset-2 ring-zinc-900' : ''
-                            }`}
-                            style={{ backgroundColor: c }}
-                            aria-label={c}
+        <form onSubmit={onSubmit} className="flex min-h-0 flex-1 flex-col">
+            <DialogBody>
+                <div className="grid gap-4 sm:grid-cols-2">
+                    <div className="grid gap-2">
+                        <Label htmlFor="ms-name">Name</Label>
+                        <Input
+                            id="ms-name"
+                            value={data.name}
+                            onChange={(e) => setData('name', e.target.value)}
+                            autoFocus
                         />
-                    ))}
+                        {errors.name && <p className="text-xs text-red-600">{errors.name}</p>}
+                    </div>
+                    <div className="grid gap-2">
+                        <Label htmlFor="ms-max">Max points</Label>
+                        <Input
+                            id="ms-max"
+                            type="number"
+                            inputMode="numeric"
+                            min={1}
+                            max={100}
+                            value={data.max_points}
+                            onChange={(e) => setData('max_points', parseInt(e.target.value, 10) || 1)}
+                        />
+                        {errors.max_points && <p className="text-xs text-red-600">{errors.max_points}</p>}
+                    </div>
                 </div>
-            </div>
 
-            <div className="grid gap-2">
-                <Label htmlFor="ms-icon">Icon</Label>
-                <select
-                    id="ms-icon"
-                    value={data.icon}
-                    onChange={(e) => setData('icon', e.target.value)}
-                    className="rounded-md border border-input bg-background px-3 py-2 text-sm capitalize"
-                >
-                    {ICON_OPTIONS.map((i) => (
-                        <option key={i} value={i}>{i}</option>
-                    ))}
-                </select>
-            </div>
+                <div className="grid gap-2">
+                    <Label>Color</Label>
+                    <div className="flex flex-wrap gap-2">
+                        {COLOR_OPTIONS.map((c) => (
+                            <button
+                                key={c}
+                                type="button"
+                                onClick={() => setData('color', c)}
+                                className={`size-9 rounded-lg transition-all ${
+                                    data.color === c ? 'ring-2 ring-offset-2 ring-zinc-900' : ''
+                                }`}
+                                style={{ backgroundColor: c }}
+                                aria-label={c}
+                            />
+                        ))}
+                    </div>
+                </div>
 
-            <label className="flex items-center gap-2 text-sm">
-                <input
-                    type="checkbox"
-                    checked={data.is_active}
-                    onChange={(e) => setData('is_active', e.target.checked)}
-                    className="size-4 rounded border-border"
-                />
-                Show on the board
-            </label>
+                <div className="grid gap-2">
+                    <Label htmlFor="ms-icon">Icon</Label>
+                    <select
+                        id="ms-icon"
+                        value={data.icon}
+                        onChange={(e) => setData('icon', e.target.value)}
+                        className="h-10 rounded-md border border-input bg-background px-3 text-sm capitalize"
+                    >
+                        {ICON_OPTIONS.map((i) => (
+                            <option key={i} value={i}>{i}</option>
+                        ))}
+                    </select>
+                </div>
+
+                <label className="flex cursor-pointer items-center gap-2 text-sm">
+                    <input
+                        type="checkbox"
+                        checked={data.is_active}
+                        onChange={(e) => setData('is_active', e.target.checked)}
+                        className="size-4 shrink-0 rounded border-border"
+                    />
+                    Show on the board
+                </label>
+            </DialogBody>
 
             <DialogFooter>
-                <Button type="submit" disabled={processing}>
+                <Button type="submit" disabled={processing} className="w-full sm:w-auto">
                     {processing ? 'Saving…' : submitLabel}
                 </Button>
             </DialogFooter>

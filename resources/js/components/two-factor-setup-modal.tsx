@@ -7,6 +7,7 @@ import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
+    DialogBody,
     DialogContent,
     DialogDescription,
     DialogHeader,
@@ -321,7 +322,7 @@ export default function TwoFactorSetupModal({
     return (
         <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
             <DialogContent className="sm:max-w-md">
-                <DialogHeader className="flex items-center justify-center">
+                <DialogHeader className="items-center text-center">
                     <GridScanIcon />
                     <DialogTitle>{modalConfig.title}</DialogTitle>
                     <DialogDescription className="text-center">
@@ -329,7 +330,7 @@ export default function TwoFactorSetupModal({
                     </DialogDescription>
                 </DialogHeader>
 
-                <div className="flex flex-col items-center space-y-5">
+                <DialogBody className="items-center gap-5">
                     {showVerificationStep ? (
                         <TwoFactorVerificationStep
                             onClose={handleClose}
@@ -344,7 +345,7 @@ export default function TwoFactorSetupModal({
                             errors={errors}
                         />
                     )}
-                </div>
+                </DialogBody>
             </DialogContent>
         </Dialog>
     );
